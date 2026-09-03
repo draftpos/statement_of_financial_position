@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="financial_position_report" model="account.report">
+            <field name="name">STATEMENT OF FINANCIAL POSITION</field>
+            <field name="filter_date_range" eval="False"/>
+            <field name="filter_unfold_all" eval="True"/>
+            <field name="default_opening_date_filter">today</field>
+        </record>
+
+        <!-- ============ ASSETS ============ -->
+        <record id="fp_assets_main" model="account.report.line">
+            <field name="name">ASSETS</field>
+            <field name="code">fp_assets_main</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">100</field>
+            <field name="hierarchy_level">0</field>
+        </record>
+
+        <!-- NON CURRENT ASSETS -->
+        <record id="fp_non_current_assets" model="account.report.line">
+            <field name="name">Non Current Assets</field>
+            <field name="code">fp_non_current_assets</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">110</field>
+            <field name="parent_id" ref="fp_assets_main"/>
+            <field name="hierarchy_level">1</field>
+        </record>
+
+        <record id="fp_line_prop_equip" model="account.report.line">
+            <field name="name">Property and equipment</field>
+            <field name="code">fp_line_prop_equip</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">111</field>
+            <field name="parent_id" ref="fp_non_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_prop_equip" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_prop_equip'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'asset_fixed')]</field>
+                    <field name="subformula">sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_line_fin_investments" model="account.report.line">
+            <field name="name">Financial investments</field>
+            <field name="code">fp_line_fin_investments</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">112</field>
+            <field name="parent_id" ref="fp_non_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_fin_investments" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_fin_investments'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'asset_non_current')]</field>
+                    <field name="subformula">sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_total_non_current" model="account.report.line">
+            <field name="name">Total Non-Current Assets</field>
+            <field name="code">fp_total_non_current</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">119</field>
+            <field name="parent_id" ref="fp_non_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="expression_ids">
+                <record id="fp_exp_total_non_current" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">aggregation</field>
+                    <field name="formula">fp_line_prop_equip.balance + fp_line_fin_investments.balance</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- CURRENT ASSETS -->
+        <record id="fp_current_assets" model="account.report.line">
+            <field name="name">Current Assets</field>
+            <field name="code">fp_current_assets</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">120</field>
+            <field name="parent_id" ref="fp_assets_main"/>
+            <field name="hierarchy_level">1</field>
+        </record>
+
+        <record id="fp_line_contrib_receivables" model="account.report.line">
+            <field name="name">Contribution receivables (net of provision)</field>
+            <field name="code">fp_line_contrib_receivables</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">121</field>
+            <field name="parent_id" ref="fp_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_contrib_receivables" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_contrib_receivables'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'asset_receivable')]</field>
+                    <field name="subformula">sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_line_cash" model="account.report.line">
+            <field name="name">Cash and cash equivalents</field>
+            <field name="code">fp_line_cash</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">123</field>
+            <field name="parent_id" ref="fp_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_cash" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_cash'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'asset_cash')]</field>
+                    <field name="subformula">sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_line_prepayments" model="account.report.line">
+            <field name="name">Prepayments</field>
+            <field name="code">fp_line_prepayments</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">124</field>
+            <field name="parent_id" ref="fp_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_prepayments" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_prepayments'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'asset_prepayments')]</field>
+                    <field name="subformula">sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_line_other_current_assets" model="account.report.line">
+            <field name="name">Other Current Assets</field>
+            <field name="code">fp_line_other_current_assets</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">125</field>
+            <field name="parent_id" ref="fp_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_other_current_assets" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_other_current_assets'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'asset_current')]</field>
+                    <field name="subformula">sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_total_current_assets" model="account.report.line">
+            <field name="name">Total Current Assets</field>
+            <field name="code">fp_total_current_assets</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">129</field>
+            <field name="parent_id" ref="fp_current_assets"/>
+            <field name="hierarchy_level">2</field>
+            <field name="expression_ids">
+                <record id="fp_exp_total_current_assets" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">aggregation</field>
+                    <field name="formula">fp_line_contrib_receivables.balance + fp_line_cash.balance + fp_line_prepayments.balance + fp_line_other_current_assets.balance</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_total_assets" model="account.report.line">
+            <field name="name">TOTAL ASSETS</field>
+            <field name="code">fp_total_assets</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">190</field>
+            <field name="hierarchy_level">0</field>
+            <field name="expression_ids">
+                <record id="fp_exp_total_assets" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">aggregation</field>
+                    <field name="formula">fp_total_non_current.balance + fp_total_current_assets.balance</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- ============ EQUITY ============ -->
+        <record id="fp_equity_main" model="account.report.line">
+            <field name="name">EQUITY (ACCUMULATED FUND AND RESERVES)</field>
+            <field name="code">fp_equity_main</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">200</field>
+            <field name="hierarchy_level">0</field>
+        </record>
+
+        <record id="fp_line_accum_fund_bf" model="account.report.line">
+            <field name="name">Accumulated Fund brought forward</field>
+            <field name="code">fp_line_accum_fund_bf</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">210</field>
+            <field name="parent_id" ref="fp_equity_main"/>
+            <field name="hierarchy_level">1</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_accum_fund_bf" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_accum_fund_bf'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', 'in', ('equity', 'equity_unallocated'))]</field>
+                    <field name="subformula">-sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_total_equity" model="account.report.line">
+            <field name="name">TOTAL ACCUMULATED FUND AND RESERVES</field>
+            <field name="code">fp_total_equity</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">290</field>
+            <field name="parent_id" ref="fp_equity_main"/>
+            <field name="hierarchy_level">1</field>
+            <field name="expression_ids">
+                <record id="fp_exp_total_equity" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">aggregation</field>
+                    <field name="formula">fp_line_accum_fund_bf.balance</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- ============ LIABILITIES ============ -->
+        <record id="fp_liabilities_main" model="account.report.line">
+            <field name="name">LIABILITIES</field>
+            <field name="code">fp_liabilities_main</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">300</field>
+            <field name="hierarchy_level">0</field>
+        </record>
+
+        <record id="fp_line_liab_remain_cov" model="account.report.line">
+            <field name="name">Liability for remaining coverage (LRC)</field>
+            <field name="code">fp_line_liab_remain_cov</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">310</field>
+            <field name="parent_id" ref="fp_liabilities_main"/>
+            <field name="hierarchy_level">1</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_liab_remain_cov" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_liab_remain_cov'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'liability_current')]</field>
+                    <field name="subformula">-sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_line_trade_payables" model="account.report.line">
+            <field name="name">Trade and other payables</field>
+            <field name="code">fp_line_trade_payables</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">380</field>
+            <field name="parent_id" ref="fp_liabilities_main"/>
+            <field name="hierarchy_level">1</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_trade_payables" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_trade_payables'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'liability_payable')]</field>
+                    <field name="subformula">-sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_line_non_current_liab" model="account.report.line">
+            <field name="name">Long-term loans / borrowings</field>
+            <field name="code">fp_line_non_current_liab</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">385</field>
+            <field name="parent_id" ref="fp_liabilities_main"/>
+            <field name="hierarchy_level">1</field>
+            <field name="groupby">account_id</field>
+            <field name="expression_ids">
+                <record id="fp_exp_non_current_liab" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">domain</field>
+                    <field name="formula">['|', ('account_id.financial_position_category', '=', 'fp_long_term_borrow'), '&amp;', ('account_id.financial_position_category', '=', False), ('account_id.account_type', '=', 'liability_non_current')]</field>
+                    <field name="subformula">-sum</field>
+                </record>
+            </field>
+        </record>
+
+        <record id="fp_total_liabilities" model="account.report.line">
+            <field name="name">Total Liabilities</field>
+            <field name="code">fp_total_liabilities</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">399</field>
+            <field name="parent_id" ref="fp_liabilities_main"/>
+            <field name="hierarchy_level">1</field>
+            <field name="expression_ids">
+                <record id="fp_exp_total_liabilities" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">aggregation</field>
+                    <field name="formula">fp_line_liab_remain_cov.balance + fp_line_trade_payables.balance + fp_line_non_current_liab.balance</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- TOTAL EQUITY AND LIABILITIES -->
+        <record id="fp_total_equity_and_liab" model="account.report.line">
+            <field name="name">TOTAL EQUITY AND LIABILITIES</field>
+            <field name="code">fp_total_equity_and_liab</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">400</field>
+            <field name="hierarchy_level">0</field>
+            <field name="expression_ids">
+                <record id="fp_exp_total_equity_and_liab" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">aggregation</field>
+                    <field name="formula">fp_total_equity.balance + fp_total_liabilities.balance</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- BALANCE CHECK -->
+        <record id="fp_balance_check" model="account.report.line">
+            <field name="name">Balance Check (Assets - Equity and Liabilities)</field>
+            <field name="code">fp_balance_check</field>
+            <field name="report_id" ref="financial_position_report"/>
+            <field name="sequence">500</field>
+            <field name="hierarchy_level">0</field>
+            <field name="expression_ids">
+                <record id="fp_exp_balance_check" model="account.report.expression">
+                    <field name="label">balance</field>
+                    <field name="engine">aggregation</field>
+                    <field name="formula">fp_total_assets.balance - fp_total_equity_and_liab.balance</field>
+                </record>
+            </field>
+        </record>
+    </data>
+</odoo>
