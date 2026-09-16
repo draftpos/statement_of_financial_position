@@ -6,7 +6,7 @@
             <field name="name">Statement of Financial Position</field>
             <field name="tag">account_report</field>
             <field name="path">statement-financial-position</field>
-            <field name="context" eval="{'report_id': ref('statement_financial_position.financial_position_report')}"/>
+            <field name="context" eval="{'report_id': ref('statement_of_financial_position.financial_position_report')}"/>
         </record>
 
         <!-- Menu Item under Accounting > Reporting -->
